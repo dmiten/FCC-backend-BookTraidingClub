@@ -92,6 +92,11 @@ export default class List extends React.Component {
   };
 
   renderPager = () => { // ◄----------------------------------------------------
+
+    if (this.state.total < this.booksOnPage) {
+      return null;
+    }
+
     let disabledPrevious = this.state.page === 1,
         disabledNext = this.state.page * this.booksOnPage >= this.state.total;
 

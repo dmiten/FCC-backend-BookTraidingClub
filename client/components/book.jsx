@@ -76,7 +76,7 @@ export default class Book extends React.Component {
       _book.accepted = _book.trades[index];
     }
 
-    if (type === "decline") {
+    if (type === "reject") {
       _book.accepted = "";
     }
 
@@ -104,7 +104,7 @@ export default class Book extends React.Component {
   };
 
   renderModalTrades = () => { // ◄----------------------------------------------
-    let type = this.state.book.accepted ? "decline" : "accept",
+    let type = this.state.book.accepted ? "reject" : "accept",
         oneInterested = (one, index) => {
           if (!this.state.book.accepted || this.state.book.accepted === one) {
             return (
@@ -158,7 +158,7 @@ export default class Book extends React.Component {
               <div className="text-center">
                 <span className="fa fa-users" />
                 &nbsp;
-                are inerested in this book
+                are interested in this book
               </div>
             </Modal.Title>
           </Modal.Header>
