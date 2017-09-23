@@ -74,13 +74,34 @@ class App extends React.Component {
         </Switch>
   };
 
+  updateUser = (newUserData) => { // ◄------------------------------------------
+    return (
+        axios.post("/user/update",
+            { user: newUserData },
+            { headers: { "Authorization": this.state.token } }
+        )
+        .then(res => {
+          this.mapUserToStateStorage(newUserData);
+          return { message: res.data.message }
+        })
+        .catch(err => console.log(err.message))
+    )
+  };
+
+  mapUserToStateStorage = (userData) => {
+    this.setState(userData);
+    Object.keys(userData).forEach(key =>
+        sessionStorage.setItem(key, JSON.stringify(userData[key])));
+    return () => ({ message: "user data updated" })
+  };
+
   render() { // ◄---------------------------------------------------------------
     return (
         <div className="transparent" id="main">
           <NavBar isAuth={this.state.userId} />
           <Route exact
-              path="/"
-              render={() => <Redirect to="/allbooks"/>}
+                 path="/"
+                 render={() => <Redirect to="/allbooks" />}
           />
           <Route
               path="/allbooks"
@@ -101,27 +122,6 @@ class App extends React.Component {
           {this.conditionalElements()}
         </div>
     )
-  };
-
-  updateUser = (newUserData) => { // ◄------------------------------------------
-    return (
-        axios.post("/user/update",
-            { user: newUserData },
-            { headers: { "Authorization": this.state.token } }
-        )
-        .then(res => {
-          this.mapUserToStateStorage(newUserData);
-          return { message: res.data.message }
-        })
-        .catch(err => console.log(err.message))
-    )
-  };
-
-  mapUserToStateStorage = (userData) => {
-    this.setState(userData);
-    Object.keys(userData).forEach(key =>
-        sessionStorage.setItem(key, JSON.stringify(userData[key])));
-    return () => ({ message: "user data updated" })
   };
 
   modalParams = { // ◄------------------ props and handlers for different modals

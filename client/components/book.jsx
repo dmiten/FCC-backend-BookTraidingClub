@@ -41,59 +41,108 @@ export default class Book extends React.Component {
 
   handleTrade = (tradeType) => { // ◄-------------------------------------------
     let _state = Object.assign({}, this.state),
-        userTrade = this.props.trades;
+        pairedBook = this.props.pairedBook || {},
+        userTrade = this.props.trades,
+        bookData, pairedBookData;
 
-    if (tradeType === "add") {
-      _state.book.trades.push(this.props.userId);
-      userTrade.push(_state.book._id);
+    if (tradeType === "add trade") {
+
+      if (userTrade.indexOf(_state.book._id) === -1) {
+        userTrade.push(_state.book._id);
+      }
+
+      if (_state.book.trades.indexOf(this.props.userId) === -1) {
+        _state.book.trades.push(this.props.userId);
+      }
+
+      bookData = { trades: _state.book.trades };
     }
 
-    if (tradeType === "remove") {
+    if (tradeType === "remove trade") {
       _state.book.trades.splice(
           _state.book.trades.indexOf(this.props.userId), 1);
       userTrade.splice(userTrade.indexOf(_state.book._id), 1);
+      bookData = { trades: _state.book.trades };
+    }
+
+    if (tradeType === "accept with this book") {
+
+      if (userTrade.indexOf(_state.book._id) === -1) {
+        userTrade.push(_state.book._id);
+      }
+
+      if (pairedBook.trades.indexOf(this.props.userId) === -1) {
+        pairedBook.trades.push(this.props.userId);
+      }
+
+      if (_state.book.trades.indexOf(pairedBook.owner) === -1) {
+        _state.book.trades.push(pairedBook.owner);
+      }
+
+      _state.book.accepted = pairedBook.owner + "," + pairedBook._id;
+      pairedBook.accepted = _state.book.owner + "," + _state.book._id;
+
+      bookData = {
+        accepted: _state.book.accepted,
+        trades: _state.book.trades
+      };
+
+      pairedBookData = {
+        accepted: pairedBook.accepted,
+        trades: pairedBook.trades
+      };
+    }
+
+    if (tradeType === "reject trade") {
+
+      _state.book.trades.splice(
+          _state.book.trades.indexOf(pairedBook.owner), 1);
+
+      pairedBook.trades.splice(
+          pairedBook.trades.indexOf(this.props.userId), 1);
+
+      userTrade.splice(userTrade.indexOf(_state.book._id), 1);
+      _state.book.accepted = "";
+      pairedBook.accepted = "";
+
+      bookData = {
+        accepted: "",
+        trades: _state.book.trades
+      };
+
+      pairedBookData = {
+        accepted: "",
+        trades: pairedBook.trades
+      };
     }
 
     Promise.all([
-        this.updateBook({ trades: _state.book.trades }),
+        this.updateBook(bookData),
+        this.updateBook(pairedBookData, pairedBook._id),
         this.props.updateUser({ trades: userTrade })
     ])
-    .then(result => {
-      if (result[0].message === "book data updated"
-          && result[1].message === "user data updated") {
+
+    .then(() => {
+      if (this._isMounted) {
         this.setState(_state);
-      } else {
-        console.log(result);
+      }
+      if (tradeType === "accept with this book"
+          || tradeType === "reject trade") {
+        this.props.pairedBookSetState({ book: pairedBook });
       }
     })
     .catch(err => console.log(err));
   };
 
-  handleTrades = (type, index) => {
-    let _book = {...this.state.book};
+  updateBook = (newBookData, bookId = this.state.book._id) => { // ◄------------
 
-    if (type === "accept") {
-      _book.accepted = _book.trades[index];
+    if (!newBookData) {
+      return new Promise (() => {return { message: "book data updated" }})
     }
 
-    if (type === "reject") {
-      _book.accepted = "";
-    }
-
-    this.updateBook(_book)
-    .then(result =>{
-      if (result.message === "book data updated") {
-        this.setState({ book: _book });
-      } else {
-        console.log(result.message)
-      }
-    })
-  };
-
-  updateBook = (newBookData) => { // ◄------------------------------------------
     return (
         axios.post("/book/update",
-            { book: {_id: this.state.book._id, ...newBookData} },
+            { book: { _id: bookId, ...newBookData } },
             { headers: { "Authorization": this.props.token } }
         )
         .then(result => {
@@ -103,10 +152,21 @@ export default class Book extends React.Component {
     )
   };
 
+  pairedBookSetState = (data) => {
+    if (this._isMounted) {
+      this.setState(data);
+    }
+  };
+
   renderModalTrades = () => { // ◄----------------------------------------------
-    let type = this.state.book.accepted ? "reject" : "accept",
+
+    let acceptrejact = this.state.book.accepted ?
+          "reject accepted trade with this user" :
+          "accept the trade with a book of this user",
+
         oneInterested = (one, index) => {
-          if (!this.state.book.accepted || this.state.book.accepted === one) {
+          if (!this.state.book.accepted
+              || this.state.book.accepted.split(",")[0] === one) {
             return (
                 <div
                     id="oneinterested"
@@ -123,11 +183,9 @@ export default class Book extends React.Component {
                   >
                     {index + 1}
                   </Button>
-                  <Button
-                      onClick={() => this.handleTrades(type, index)}
-                  >
-                    {type}
-                  </Button>
+                  <span>
+                    &nbsp; &nbsp; {acceptrejact}
+                  </span>
                   <Panel
                       bsStyle="primary"
                       className="shadow bookmodal"
@@ -140,6 +198,8 @@ export default class Book extends React.Component {
                     <List
                         {...this.props}
                         owner={one}
+                        pairedBook={this.state.book}
+                        pairedBookSetState={this.pairedBookSetState}
                     />
                   </Panel>
                 </div>
@@ -226,10 +286,12 @@ export default class Book extends React.Component {
   conditionalButtons = () => { // ◄---------------------------------------------
     let bsStyle = "success",
         trades = "trades";
+
     if (this.state.book.accepted) {
       bsStyle = "danger";
       trades = "accepted";
     }
+
     let tradesButton = this.state.book.trades.length ?
         <Button
             className="bookbutton shadow"
@@ -238,12 +300,10 @@ export default class Book extends React.Component {
             onClick={() => this.setState({ showModal: true })}
         >
           {trades}
-        </Button> : null;
+        </Button> : null,
 
-    if (this.props.owner && this.props.userId === this.state.book.owner) {
-      return (
-          <div>
-            {tradesButton}
+        deleteButton = this.state.book.trades.length ?
+            null :
             <Button
                 className="bookbutton shadow"
                 bsSize="small"
@@ -251,18 +311,29 @@ export default class Book extends React.Component {
                 onClick={() => this.props.deleteBook(this.state.book)}
             >
               delete
-            </Button>
+            </Button>;
+
+    if (this.props.owner
+        && this.props.userId === this.state.book.owner) {
+      return (
+          <div>
+            {tradesButton}
+            {deleteButton}
           </div>
       )
     } else {
       if (this.props.userId
-          && !this.state.book.accepted
-          && this.props.userId !== this.state.book.owner) {
+          && this.props.userId !== this.state.book.owner
+          && !this.state.book.accepted) {
 
-        let tradeType = "add";
+        let tradeType = "add trade";
 
         if (this.state.book.trades.indexOf(this.props.userId) !== -1) {
-          tradeType = "remove"
+          tradeType = "remove trade"
+        }
+
+        if (this.props.pairedBook && !this.props.pairedBook.accepted) {
+          tradeType = "accept with this book"
         }
 
         return (
@@ -272,7 +343,7 @@ export default class Book extends React.Component {
                 bsStyle="success"
                 onClick={() => this.handleTrade(tradeType)}
             >
-              {tradeType + " trade"}
+              {tradeType}
             </Button>
         )
       }
@@ -280,15 +351,25 @@ export default class Book extends React.Component {
   };
 
   render() { // ◄---------------------------------------------------------------
-    let accepted = (this.props.userId
-                    && this.state.book.accepted === this.props.userId) ?
-          <Well
-              bsSize="small"
-              className="text-center"
-              id="acceptedwell"
-          >
-            <b>your trade is accepted</b>
-          </Well>: null;
+    let accepted = null;
+
+    if (this.props.userId && this.state.book.accepted) {
+      if (this.state.book.accepted.split(",")[0] === this.props.userId) {
+        accepted = this.props.pairedBook ? <Button
+                className="shadow"
+                onClick={() => this.handleTrade("reject trade")}
+                id="rejectaccepted"
+            >
+              <b>reject accepted trade</b>
+            </Button>
+            : <Well
+                className="text-center"
+                bsSize="small"
+                id="rejectaccepted">
+              <b>trade is accepted</b>
+            </Well>
+      }
+    }
 
     return (
         <Col

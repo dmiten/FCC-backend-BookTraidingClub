@@ -1,5 +1,8 @@
-#acceptedwell {
-  background-color: mediumseagreen;
+@media (min-width: 768px) {
+  .navbar-nav > li > a {
+    padding-top: 30px;
+    padding-bottom: 38px;
+  }
 }
 
 #addbookpanel {
@@ -76,11 +79,8 @@
   margin: 0 auto;
 }
 
-@media (min-width: 768px) {
-  .navbar-nav > li > a {
-    padding-top: 30px;
-    padding-bottom: 38px;
-  }
+#rejectaccepted {
+  background-color: #5cb85c;
 }
 
 .bookbutton {

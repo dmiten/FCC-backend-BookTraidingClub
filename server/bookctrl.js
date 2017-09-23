@@ -97,17 +97,20 @@ bookCtrl.update = (req, res, passport) => {
 
     if (user) {
       Book.findOne({ _id: req.body.book._id }, (err, book) => {
+
         if (err) {
           serverLog("error", "bookCtrl.update - Book.findOne - " + err.message);
           res.json({ message: "error updating book" });
 
         } else {
-          if (user._id.toString() === book.owner) {
-            book.accepted = req.body.book.accepted;
-          }
-          book.trades = req.body.book.trades;
+          book.accepted = req.body.book.accepted !== undefined ?
+              req.body.book.accepted : book.accepted;
+
+          book.trades = req.body.book.trades ?
+              req.body.book.trades : book.trades;
 
           book.save(err => {
+
             if (err) {
               serverLog("error", "bookCtrl.update - book.save - " + err.message);
               res.json({ message: "error updating book" });
