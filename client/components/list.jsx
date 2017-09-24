@@ -124,15 +124,17 @@ export default class List extends React.Component {
 
   render() { // ◄---------------------------------------------------------------
     return (
-      <div id="list">
-        {this.state.books.map(book =>
-            <Book
-                {...this.props}
-                book={book}
-                key={book._id}
-            />)}
-        {this.renderPager()}
-      </div>
+        <div id="listcontainer">
+          <div id="list">
+            {this.state.books.map(book =>
+                <Book
+                    {...this.props}
+                    book={book}
+                    key={book._id}
+                />)}
+          </div>
+          {this.renderPager()}
+        </div>
     )
   }
 }
