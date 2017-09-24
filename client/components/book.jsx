@@ -152,7 +152,7 @@ export default class Book extends React.Component {
     )
   };
 
-  pairedBookSetState = (data) => {
+  pairedBookSetState = (data) => { // ◄-----------------------------------------
     if (this._isMounted) {
       this.setState(data);
     }
