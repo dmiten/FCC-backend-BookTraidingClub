@@ -374,7 +374,7 @@ export default class Book extends React.Component {
     return (
         <Col
             id="bookcol"
-            xs={6} md={4}
+            xs={10} s={5} md={4}
         >
           <Thumbnail
               className="scrollable shadow"

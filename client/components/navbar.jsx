@@ -21,6 +21,7 @@ export const NavBar = ({ isAuth }) => {
 
   return (
       <Navbar
+          id="navbar"
           className="shadow"
           collapseOnSelect
           fluid

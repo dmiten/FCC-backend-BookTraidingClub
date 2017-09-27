@@ -19,7 +19,7 @@
 
 #bookcol {
   height: 390px;
-  max-width: 300px;
+  max-width: 280px;
   margin-bottom: 15px;
 }
 
@@ -62,6 +62,10 @@
   height: 20px;
 }
 
+#header {
+  margin-left: 5px;
+}
+
 #labelinpager {
   margin: 15px auto;
 }
@@ -74,8 +78,8 @@
 }
 
 #main {
-  min-width: 360px;
-  margin: 0.5% 0;
+  padding: 1%;
+  min-width: 330px;
 }
 
 #name {
@@ -104,7 +108,7 @@
 }
 
 .component {
-  min-width: 360px;
+  min-width: 99%;
 }
 
 .forminput{
