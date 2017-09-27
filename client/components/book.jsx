@@ -161,8 +161,8 @@ export default class Book extends React.Component {
   renderModalTrades = () => { // ◄----------------------------------------------
 
     let acceptrejact = this.state.book.accepted ?
-          "reject accepted trade with this user" :
-          "accept the trade with a book of this user",
+          "reject the trade with this user" :
+          "accept with a book of this user",
 
         oneInterested = (one, index) => {
           if (!this.state.book.accepted

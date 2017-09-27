@@ -112,7 +112,7 @@
 }
 
 .forminput{
-  width: 50%;
+  width: 70%;
   margin: 20px auto;
 }
 
@@ -121,7 +121,7 @@
 }
 
 .navbar-toggle {
-  padding: 9px 10px !important;
+  padding: 0px 4px 10px 0px !important;
 }
 
 .panelheader {
