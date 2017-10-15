@@ -24,6 +24,10 @@
 }
 
 #bookthumb {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  padding: 5% 0;
   background-color: #37505b;
   height: 99%;
   overflow: auto;
@@ -78,8 +82,9 @@
 }
 
 #main {
-  padding: 1%;
+  margin: auto;
   min-width: 330px;
+  max-width: 960px;
 }
 
 #name {
